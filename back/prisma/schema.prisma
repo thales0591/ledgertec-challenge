@@ -16,3 +16,39 @@ model User {
 
   @@map("users")
 }
+
+enum DocumentType {
+  GENERIC
+  CONTRACT
+  INVOICE
+  LETTER
+  REPORT
+}
+
+enum LanguageOptions {
+  PORTUGUESE
+  ENGLISH
+}
+
+enum PreservationStatus {
+  STARTED
+  PRESERVED
+  FAILED
+}
+
+model Document {
+  id                 Int                @id @default(autoincrement())
+  name               String
+  preservationDate   DateTime?
+  preservationStatus PreservationStatus @default(STARTED)
+  author             String?
+  uniqueIdentifier   String?            @unique
+  documentType       DocumentType?      @default(GENERIC)
+  language           LanguageOptions?   @default(PORTUGUESE)
+  pdfFilePath        String
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+
+  @@index([name])
+  @@map("documents")
+}

@@ -49,6 +49,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         setIsAuthenticated(true)
         await getAndSetUser()
         navigate('/', { replace: true })
+      } else {
+        throw new Error(result.error || 'Credenciais inválidas')
       }
     } catch (error) {
       console.error('Error while trying to login: ', error)

@@ -13,8 +13,16 @@ import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { NavLink } from 'react-router-dom'
 import { registerSchema } from '@/schemas/register-schema'
+import { createUser } from '@/services/user'
+import { ApiError } from '@/types/error'
+import toast from 'react-hot-toast'
+import { toastErrorStyle } from '@/lib/toast-error-style'
+import { useContext } from 'react'
+import { AuthContext } from '@/contexts/AuthContext'
 
 export function SignUpForm() {
+  const { login } = useContext(AuthContext)
+
   const {
     register,
     handleSubmit,
@@ -23,8 +31,16 @@ export function SignUpForm() {
     resolver: zodResolver(registerSchema),
   })
 
-  function onSubmit(data: z.infer<typeof registerSchema>) {
-    console.log(data)
+  async function onSubmit(data: z.infer<typeof registerSchema>) {
+    try {
+      await createUser(data)
+      await login({ email: data.email, password: data.password })
+    } catch (error) {
+      const errorMessage =
+        (error as ApiError)?.response?.data?.message ??
+        'Erro ao tentar criar conta'
+      toast.error(errorMessage, toastErrorStyle)
+    }
   }
 
   return (
@@ -85,7 +101,7 @@ export function SignUpForm() {
             </CardDescription>
           </div>
           <Button type="submit" className="w-full">
-            Log-in
+            Register
           </Button>
         </CardContent>
       </Card>

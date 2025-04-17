@@ -8,13 +8,20 @@ import {
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
-import { loginSchema } from '@/schemas/login-schema'
+import { LoginFormData, loginSchema } from '@/schemas/login-schema'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { NavLink } from 'react-router-dom'
+import { useContext } from 'react'
+import { AuthContext } from '@/contexts/AuthContext'
+import toast from 'react-hot-toast'
+import { toastErrorStyle } from '@/lib/toast-error-style'
+import { ApiError } from '@/types/error'
 
 export function SignInForm() {
+  const { login } = useContext(AuthContext)
+
   const {
     register,
     handleSubmit,
@@ -23,8 +30,15 @@ export function SignInForm() {
     resolver: zodResolver(loginSchema),
   })
 
-  function onSubmit(data: z.infer<typeof loginSchema>) {
-    console.log(data)
+  async function onSubmit(data: LoginFormData) {
+    try {
+      await login(data)
+    } catch (error) {
+      const errorMessage =
+        (error as ApiError)?.response?.data?.message ??
+        'Erro ao tentar fazer login'
+      toast.error(errorMessage, toastErrorStyle)
+    }
   }
 
   return (

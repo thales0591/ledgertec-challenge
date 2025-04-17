@@ -8,15 +8,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id       String @id @default(uuid())
-  name     String
-  email    String @unique
-  password String
-
-  @@map("users")
-}
-
 enum DocumentType {
   GENERIC
   CONTRACT
@@ -34,6 +25,15 @@ enum PreservationStatus {
   STARTED
   PRESERVED
   FAILED
+}
+
+model User {
+  id       String @id @default(uuid())
+  name     String
+  email    String @unique
+  password String
+
+  @@map("users")
 }
 
 model Document {

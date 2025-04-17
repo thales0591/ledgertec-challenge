@@ -1,10 +1,10 @@
 import { ConflictException, Injectable } from '@nestjs/common'
-import { UserRepostiory } from '../user.repository'
+import { UserRepository } from '../user.repository'
 import { hash } from 'bcryptjs'
 
 @Injectable()
 export class CreateUserUseCase {
-  constructor(private readonly userRepostiory: UserRepostiory) {}
+  constructor(private readonly userRepostiory: UserRepository) {}
 
   async execute(
     id: string | undefined,

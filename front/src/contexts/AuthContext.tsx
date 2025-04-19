@@ -32,7 +32,7 @@ interface AuthProviderProps {
 
 export const AuthProvider = ({ children }: AuthProviderProps) => {
   const navigate = useNavigate()
-  const { getAndSetUser } = useUser()
+  const { getAndSetUser, user } = useUser()
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
     const token = getAccessToken()
     return !!token
@@ -80,7 +80,9 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
             return
           }
 
-          getAndSetUser()
+          if (!user) {
+            getAndSetUser()
+          }
         } catch (error) {
           console.error('Error checking token expiration:', error)
         }
@@ -106,7 +108,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       window.removeEventListener('storage', checkAuth)
       clearInterval(interval)
     }
-  }, [isAuthenticated, navigate, getAndSetUser, logout])
+  }, [isAuthenticated, navigate, getAndSetUser, logout, user])
 
   return (
     <AuthContext.Provider

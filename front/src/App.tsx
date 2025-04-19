@@ -3,7 +3,7 @@ import { AppLayout } from './layout/AppLayout'
 import { SignIn } from './pages/auth/sign-in'
 import { SignUp } from './pages/auth/sign-up'
 import PrivateRoute from './components/PrivateRoute'
-import { NewDocument } from './pages/app/documents/NewDocument'
+import { NewDocument } from './pages/app/NewDocument'
 import { Home } from './pages/app/Home'
 
 export function App() {

@@ -89,7 +89,10 @@ export function SignInForm() {
               </NavLink>
             </CardDescription>
           </div>
-          <Button type="submit" className="w-full">
+          <Button
+            type="submit"
+            className="w-full bg-[#25C1D1] hover:bg-[#1C9FA5]"
+          >
             Log-in
           </Button>
         </CardContent>

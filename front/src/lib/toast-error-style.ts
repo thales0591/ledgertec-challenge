@@ -1,9 +1,10 @@
 export const toastErrorStyle = {
   style: {
-    color: '#3E63DD',
+    color: '#25C1D1',
   },
   iconTheme: {
-    primary: '#3E63DD',
+    primary: '#dd3e5b',
     secondary: '#FFFAEE',
   },
+  duration: 4000,
 }

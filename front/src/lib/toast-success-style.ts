@@ -1,9 +1,9 @@
 export const toastSuccessStyle = {
   style: {
-    color: '#3E63DD',
+    color: '#25C1D1',
   },
   iconTheme: {
-    primary: '#3E63DD',
+    primary: '#25C1D1',
     secondary: '#FFFAEE',
   },
 }

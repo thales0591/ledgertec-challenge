@@ -16,14 +16,29 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
 
   const getAndSetUser = async () => {
     try {
-      const response = await getUserMetrics()
-      setUser(response)
+      if (!user) {
+        // Evita uma nova requisição se o usuário já foi carregado
+        setLoading(true)
+        const response = await getUserMetrics()
+        setUser(response)
+      }
     } catch (error) {
       throw new Error('Erro ao buscar dados do usuário')
     } finally {
       setLoading(false)
     }
   }
+
+  // const getAndSetUser = async () => {
+  //   try {
+  //     const response = await getUserMetrics()
+  //     setUser(response)
+  //   } catch (error) {
+  //     throw new Error('Erro ao buscar dados do usuário')
+  //   } finally {
+  //     setLoading(false)
+  //   }
+  // }
 
   return (
     <UserContext.Provider

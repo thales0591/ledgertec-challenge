@@ -1,4 +1,5 @@
-import { Payment } from './columns'
+import { NewDocumentForm } from '@/forms/NewDocumentForm'
+import { Payment } from '../../components/documents/columns'
 
 export const payments: Payment[] = [
   {
@@ -28,5 +29,9 @@ export const payments: Payment[] = [
 ]
 
 export function NewDocument() {
-  return <h1>New Document</h1>
+  return (
+    <div className="flex flex-1 w-full justify-center items-center">
+      <NewDocumentForm />
+    </div>
+  )
 }

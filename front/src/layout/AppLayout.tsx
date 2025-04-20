@@ -4,7 +4,7 @@ import { Outlet } from 'react-router-dom'
 
 export function AppLayout() {
   return (
-    <div className="bg-[#EFEFEF] min-h-screen flex flex-col">
+    <div className="bg-[#EFEFEF] min-h-screen flex flex-col font-rubik">
       <Header />
 
       <main className="flex flex-1">

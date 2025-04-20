@@ -19,7 +19,11 @@ import {
   NewDocumentFormData,
   newDocumentSchema,
 } from '@/schemas/new-document-schema'
-import { createDocument, uploadDocument } from '@/services/documents'
+import {
+  createDocument,
+  updateDocument,
+  uploadDocument,
+} from '@/services/documents'
 import { useMutation } from '@tanstack/react-query'
 import { toastSuccessStyle } from '@/lib/toast-success-style'
 import { useNavigate } from 'react-router-dom'
@@ -46,8 +50,18 @@ export function NewDocumentForm() {
     },
   })
 
-  const craeteMutation = useMutation({
+  const createMutation = useMutation({
     mutationFn: createDocument,
+    onError: () => {
+      toast.error(
+        'Ocurred an error while creating your document :(',
+        toastErrorStyle,
+      )
+    },
+  })
+
+  const updateMutation = useMutation({
+    mutationFn: updateDocument,
     onSuccess: () => {
       toast.success('Document created successfully!', toastSuccessStyle)
       reset()
@@ -55,7 +69,7 @@ export function NewDocumentForm() {
     },
     onError: () => {
       toast.error(
-        'Ocurred an error while creating your document :(',
+        'Ocurred an error while updating your document :(',
         toastErrorStyle,
       )
     },
@@ -65,7 +79,7 @@ export function NewDocumentForm() {
     try {
       const uploadRes = await uploadMutation.mutateAsync(data.file[0])
 
-      craeteMutation.mutate({
+      const { document, id } = await createMutation.mutateAsync({
         name: data.name,
         documentType: data.type,
         language: data.language,
@@ -75,6 +89,8 @@ export function NewDocumentForm() {
           uniqueIdentifier: data.uniqueIdentifier,
         }),
       })
+
+      await updateMutation.mutate({ id: document.id, transferId: id })
     } catch (error) {
       const errorMessage =
         (error as ApiError)?.response?.data?.message ??
@@ -174,7 +190,7 @@ export function NewDocumentForm() {
               />
             </div>
           </div>
-          <div className="flex flex-col gap-2 pt-6">
+          <div className="flex flex-col gap-2 pt-6 py-4">
             <Label htmlFor="language">Language</Label>
             <SelectBox
               id="language"
@@ -201,11 +217,16 @@ export function NewDocumentForm() {
               accept=".pdf"
               {...register('file')}
             />
-            {typeof errors.file?.message === 'string' && (
+            <span className="text-sm text-destructive block min-h-[1.25rem]">
+              {typeof errors.file?.message === 'string'
+                ? errors.file?.message
+                : ' '}
+            </span>
+            {/* {typeof errors.file?.message === 'string' && (
               <span className="text-sm text-destructive">
-                {errors.file.message}
+                {errors.file.message ?? 'eai'}
               </span>
-            )}
+            )} */}
           </div>
           <div className="w-full flex justify-around">
             <Button type="submit" className="bg-[#25C1D1] hover:bg-[#1C9FA5]">

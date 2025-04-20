@@ -24,7 +24,18 @@ export class CreateDocumentUseCase {
       throw new ConflictException('Document with same name already exists.')
     }
 
-    await this.documentRepostiory.createDocument({
+    if (uniqueIdentifier) {
+      const documentWithSameIdentifier =
+        await this.documentRepostiory.findByIdentifier(uniqueIdentifier)
+
+      if (documentWithSameIdentifier) {
+        throw new ConflictException(
+          'Document with same unique identifier already exists.',
+        )
+      }
+    }
+
+    const document = await this.documentRepostiory.createDocument({
       name,
       author,
       documentType,
@@ -33,6 +44,14 @@ export class CreateDocumentUseCase {
       pdfFilePath,
     })
 
-    return await this.archivematicaRepository.createTransfer(name, pdfFilePath)
+    const { id } = await this.archivematicaRepository.createTransfer(
+      name,
+      pdfFilePath,
+    )
+
+    return {
+      document,
+      id,
+    }
   }
 }

@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { PrismaService } from 'src/prisma/prisma.service'
 import { UploadDto } from './dto/upload-document.dto'
+import { UpdateDocumentDto } from './dto/update-document.dto'
 
 @Injectable()
 export class DocumentRepostiory {
@@ -31,6 +32,35 @@ export class DocumentRepostiory {
       where: {
         name,
       },
+    })
+  }
+
+  async findByIdentifier(uniqueIdentifier: string) {
+    return await this.prisma.document.findFirst({
+      where: {
+        uniqueIdentifier,
+      },
+    })
+  }
+
+  async findAll() {
+    return await this.prisma.document.findMany()
+  }
+
+  async findById(id: string) {
+    return await this.prisma.document.findFirst({
+      where: {
+        id,
+      },
+    })
+  }
+
+  async updateDocument(data: UpdateDocumentDto) {
+    return await this.prisma.document.update({
+      where: {
+        id: data.id,
+      },
+      data,
     })
   }
 }

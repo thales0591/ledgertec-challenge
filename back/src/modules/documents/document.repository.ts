@@ -43,8 +43,21 @@ export class DocumentRepostiory {
     })
   }
 
-  async findAll() {
-    return await this.prisma.document.findMany()
+  async findAll(limit: number, skip: number) {
+    const [documents, totalCount] = await this.prisma.$transaction([
+      this.prisma.document.findMany({
+        skip,
+        take: limit,
+        orderBy: { createdAt: 'desc' },
+      }),
+      this.prisma.document.count(),
+    ])
+
+    return {
+      documents,
+      totalCount,
+      pageCount: Math.ceil(totalCount / limit),
+    }
   }
 
   async findById(id: string) {

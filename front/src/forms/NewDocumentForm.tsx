@@ -62,10 +62,12 @@ export function NewDocumentForm() {
 
   const updateMutation = useMutation({
     mutationFn: updateDocument,
-    onSuccess: () => {
+    onSuccess: (data) => {
       toast.success('Document created successfully!', toastSuccessStyle)
       reset()
-      navigate('/')
+      navigate('/', {
+        state: { documentId: data.id, trasnferId: data.transferId },
+      })
     },
     onError: () => {
       toast.error(
@@ -98,6 +100,11 @@ export function NewDocumentForm() {
       toast.error(errorMessage, toastErrorStyle)
     }
   }
+
+  const isAnyMutationPending =
+    uploadMutation.isPending ||
+    createMutation.isPending ||
+    updateMutation.isPending
 
   return (
     <form
@@ -222,15 +229,14 @@ export function NewDocumentForm() {
                 ? errors.file?.message
                 : ' '}
             </span>
-            {/* {typeof errors.file?.message === 'string' && (
-              <span className="text-sm text-destructive">
-                {errors.file.message ?? 'eai'}
-              </span>
-            )} */}
           </div>
           <div className="w-full flex justify-around">
-            <Button type="submit" className="bg-[#25C1D1] hover:bg-[#1C9FA5]">
-              Start preservation
+            <Button
+              disabled={isAnyMutationPending}
+              type="submit"
+              className="bg-[#25C1D1] hover:bg-[#1C9FA5]"
+            >
+              {isAnyMutationPending ? 'Processing...' : 'Start preservation'}
             </Button>
           </div>
         </CardContent>

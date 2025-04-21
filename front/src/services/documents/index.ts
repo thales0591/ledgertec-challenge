@@ -3,14 +3,17 @@ import {
   CreateDocumentReq,
   CreateDocumentResp,
   Document,
+  FetchData,
   IngestStatus,
   TransferStatus,
   UpdateDocument,
   UploadDocumentResponse,
 } from './interface'
 
-export const fetchAllDocuments = async (): Promise<Document[]> => {
-  const { data } = await api.get<Document[]>('/document')
+export const fetchAllDocuments = async (
+  pageIndex: number,
+): Promise<FetchData> => {
+  const { data } = await api.get<FetchData>(`/document/?page=${pageIndex}`)
   return data
 }
 
@@ -36,6 +39,20 @@ export const updateDocument = async (
 ): Promise<Document> => {
   const { data } = await api.put<Document>(`/document`, docData)
   return data
+}
+
+export const downloadDocument = async (id: string) => {
+  const response = await api.get(`/document/download/${id}`, {
+    responseType: 'blob',
+  })
+
+  const url = window.URL.createObjectURL(new Blob([response.data]))
+  const link = document.createElement('a')
+  link.href = url
+  link.setAttribute('download', `document-${id}.pdf`)
+  document.body.appendChild(link)
+  link.click()
+  link.remove()
 }
 
 export const uploadDocument = async (

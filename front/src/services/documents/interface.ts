@@ -1,8 +1,4 @@
-enum PreservationStatus {
-  STARTED = 'STARTED',
-  PRESERVED = 'PRESERVED',
-  FAILED = 'FAILED',
-}
+export type DocStatus = 'STARTED' | 'PRESERVED' | 'FAILED'
 
 export enum DocumentType {
   GENERIC = 'GENERIC',
@@ -30,12 +26,11 @@ export interface CreateDocumentReq {
   uniqueIdentifier?: string
   pdfFilePath: string
 }
-
 export interface Document {
   id: string
   name: string
   preservationDate: Date | null
-  preservationStatus: string
+  preservationStatus: DocStatus
   author: string | null
   uniqueIdentifier: string | null
   documentType: string
@@ -45,6 +40,13 @@ export interface Document {
   updatedAt: Date
   transferId: string
   ingestId: string
+}
+
+export interface FetchData {
+  data: Document[]
+  total: number
+  page: number
+  pageCount: number
 }
 
 export interface CreateDocumentResp {
@@ -59,7 +61,7 @@ export interface TransferStatus {
   name: string
   uuid: string
   microservice: string
-  status: string
+  status: 'PROCESSING' | 'COMPLETE' | 'FAILED' | 'REJECTED' | 'USER_INPUT'
   sip_uuid: string
   message: string
 }
@@ -71,7 +73,7 @@ export interface IngestStatus {
   name: string
   uuid: string
   microservice: string
-  status: 'COMPLETE' | 'IN_PROGRESS' | 'FAILED'
+  status: 'COMPLETE' | 'PROCESSING' | 'FAILED'
   message: string
 }
 
@@ -79,7 +81,7 @@ export interface UpdateDocument {
   id: string
   name?: string
   preservationDate?: Date
-  preservationStatus?: PreservationStatus
+  preservationStatus?: DocStatus
   author?: string
   uniqueIdentifier?: string
   documentType?: DocumentType

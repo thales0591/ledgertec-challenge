@@ -1,8 +1,12 @@
 import { NavLink } from 'react-router-dom'
+import { LogOutIcon } from 'lucide-react'
+import { useAuth } from '@/hooks/useAuth'
 
 export function Header() {
+  const { logout } = useAuth()
+
   return (
-    <nav className="bg-[#FBFBFB] flex justify-around h-12 items-center font-bold tracking-tight">
+    <nav className="bg-[#FBFBFB] relative flex justify-around h-12 items-center font-bold tracking-tight">
       <NavLink
         to="/"
         className={({ isActive }) =>
@@ -20,6 +24,13 @@ export function Header() {
       >
         New document
       </NavLink>
+
+      <button
+        onClick={() => logout()}
+        className="absolute right-4 cursor-pointer"
+      >
+        <LogOutIcon />
+      </button>
     </nav>
   )
 }

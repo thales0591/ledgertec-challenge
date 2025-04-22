@@ -61,6 +61,9 @@ export class ArchivematicaRepository {
     try {
       const response = await this.api.get<Readable>(url, {
         responseType: 'stream',
+        headers: {
+          Authorization: `ApiKey ${this.configService.get('ARCHIVEMATICA_DONWLOAD_API_KEY')}`,
+        },
       })
 
       console.log('Tipo de dados recebido: ', response.data.constructor.name)

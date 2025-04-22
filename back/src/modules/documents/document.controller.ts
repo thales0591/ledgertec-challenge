@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   Body,
   Controller,
   Get,
@@ -28,15 +27,11 @@ import { UpdateDocumentUseCase } from './use-cases/update-document.usecase'
 import { FetchDocumentUseCase } from './use-cases/fetch-document.usecase'
 import { ArchivematicaRepository } from '../archivematica/archivematica.repository'
 import { Response } from 'express'
-import { pipeline } from 'stream'
-import { promisify } from 'util'
 
 interface UploadedFileWithPath extends Express.Multer.File {
   filename: string
   path: string
 }
-
-const streamPipeline = promisify(pipeline)
 
 @UseGuards(JwtAuthGuard)
 @Controller('document')
@@ -78,34 +73,17 @@ export class DocumentController {
     @Res({ passthrough: false }) res: Response,
   ) {
     try {
-      const fileUrl = `http://localhost:62080/archival-storage/download/aip/${id}/`
-      console.log('Requesting file from:', fileUrl)
+      const fileUrl = `http://localhost:62081/api/v2/file/${id}/download/`
 
       const response = await this.archivematicaRepository.downloadFile(fileUrl)
-      console.log('Received response:', response)
 
-      res.setHeader('Content-Type', 'application/zip')
+      res.setHeader('Content-Type', 'application/x-7z-compressed')
       res.setHeader(
         'Content-Disposition',
-        `attachment; filename="document-${id}.zip"`,
+        `attachment; filename="document-${id}.7z"`,
       )
 
-      // Verificando o tipo de stream
-      if (response.data.constructor.name === 'IncomingMessage') {
-        console.log('Stream is valid!')
-
-        // Verificar antes do streaming
-        const contentLength = response.headers['content-length']
-        console.log('Content-Length:', contentLength)
-
-        // Stream para o response
-        await streamPipeline(response.data, res)
-
-        console.log('Stream completed successfully')
-      } else {
-        console.error('Invalid stream received.')
-        throw new BadRequestException('Received invalid stream')
-      }
+      response.data.pipe(res)
     } catch (error) {
       console.error('Erro no download:', error)
       throw new NotFoundException('Erro ao fazer o download do arquivo')

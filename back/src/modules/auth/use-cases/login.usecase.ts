@@ -23,7 +23,7 @@ export class LoginUseCase {
       throw new UnauthorizedException('User credentials do not match.')
     }
 
-    const accessToken = this.jwt.sign({ sub: user.id })
+    const accessToken = this.jwt.sign({ sub: user.id }, { expiresIn: '6h' })
     return {
       access_token: accessToken,
     }

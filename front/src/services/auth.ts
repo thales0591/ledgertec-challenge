@@ -51,7 +51,8 @@ export const login = async (data: LoginFormData) => {
 
 export const logout = () => {
   removeToken()
-  toast('You have been disconnected.', {
+  toast.error('You have been disconnected.', {
+    ...toastErrorStyle,
     duration: 2000,
   })
 }

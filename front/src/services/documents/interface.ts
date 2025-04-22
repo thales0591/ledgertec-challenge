@@ -34,7 +34,7 @@ export interface Document {
   author: string | null
   uniqueIdentifier: string | null
   documentType: string
-  language: string
+  language: LanguageOptions
   pdfFilePath: string
   createdAt: Date
   updatedAt: Date

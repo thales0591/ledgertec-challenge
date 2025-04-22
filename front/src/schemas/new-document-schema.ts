@@ -1,7 +1,9 @@
 import { z } from 'zod'
 
 export const newDocumentSchema = z.object({
-  name: z.string().min(1, 'Please type a document name'),
+  name: z
+    .string()
+    .min(3, 'Please type a document name with more then 3 characters'),
   author: z.string().optional(),
   uniqueIdentifier: z.string().optional(),
   type: z.string(),

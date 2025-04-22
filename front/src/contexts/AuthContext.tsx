@@ -5,14 +5,14 @@ import {
   ReactNode,
   useCallback,
 } from 'react'
-import { LoginFormData } from '@/schemas/login-schema'
-import { useUser } from '@/hooks/useUser'
 import {
   getAccessToken,
   login as authLogin,
   logout as authLogout,
 } from '@/services/auth'
 import { useNavigate } from 'react-router-dom'
+import { LoginFormData } from '@/schemas/login-schema'
+import { useUser } from '@/hooks/useUser'
 
 interface AuthContextProps {
   isAuthenticated: boolean

@@ -6,8 +6,14 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { Button } from '@/components/ui/button'
-import { useEffect, useState } from 'react'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog'
 import {
   DocStatus,
   Document,
@@ -21,13 +27,16 @@ import {
   getTranferStatus,
   updateDocument,
 } from '@/services/documents'
+import { Button } from '@/components/ui/button'
+import { Pagination } from '@/components/pagination'
+import { queryClient } from '@/lib/react-query'
+import { DocumentForm } from '@/forms/DocumentForm'
+import { toastErrorStyle } from '@/lib/toast-error-style'
+import { useEffect, useState } from 'react'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { NavLink, useLocation, useSearchParams } from 'react-router-dom'
-import { toastErrorStyle } from '@/lib/toast-error-style'
-import toast from 'react-hot-toast'
-import { Pagination } from '@/components/pagination'
 import { z } from 'zod'
-import { queryClient } from '@/lib/react-query'
+import toast from 'react-hot-toast'
 
 type DocStatusProps = {
   status: DocStatus
@@ -40,6 +49,7 @@ export function Home() {
   const [ingestId, setIngestId] = useState('')
   const [documents, setDocuments] = useState<Document[]>()
   const [totalPages, setTotalPages] = useState(0)
+  const [open, setOpen] = useState(false)
   const [searchParams, setSearchParams] = useSearchParams()
   const pageIndex = z.coerce.number().parse(searchParams.get('page') ?? '1')
 
@@ -95,6 +105,18 @@ export function Home() {
     },
   })
 
+  const downloadMutation = useMutation({
+    mutationFn: async ({
+      name,
+      ingestId,
+    }: {
+      name: string
+      ingestId: string
+    }) => {
+      await downloadDocument(name, ingestId)
+    },
+  })
+
   const { data } = useQuery({
     queryKey: ['documents', pageIndex],
     queryFn: () => fetchAllDocuments(pageIndex),
@@ -141,18 +163,6 @@ export function Home() {
       return state
     })
   }
-
-  const downloadMutation = useMutation({
-    mutationFn: async ({
-      name,
-      ingestId,
-    }: {
-      name: string
-      ingestId: string
-    }) => {
-      await downloadDocument(name, ingestId)
-    },
-  })
 
   function handleDownload(name: string, ingestId: string) {
     downloadMutation.mutate({ name, ingestId })
@@ -204,10 +214,34 @@ export function Home() {
                           </span>
                         </div>
                       </TableCell>
-                      <TableCell className="">
-                        <Button className="bg-[#25C1D1] hover:bg-[#1C9FA5] h-8 w-12 ">
-                          Open
-                        </Button>
+                      <TableCell>
+                        <Dialog open={open} onOpenChange={setOpen}>
+                          <DialogTrigger asChild>
+                            <Button
+                              onClick={() => setOpen(true)}
+                              className="bg-[#25C1D1] hover:bg-[#1C9FA5] h-8 w-12"
+                            >
+                              Open
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent>
+                            <DialogHeader>
+                              <DialogTitle className="flex justify-center text-center text-xl font-bold tracking-tight text-[#1d93a0]">
+                                Edit document
+                              </DialogTitle>
+                              <DialogDescription className="text-center text-sm text-muted-foreground">
+                                Update the information and save to confirm
+                                changes
+                              </DialogDescription>
+                            </DialogHeader>
+                            {
+                              <DocumentForm
+                                documentData={document}
+                                closeModal={() => setOpen(false)}
+                              />
+                            }
+                          </DialogContent>
+                        </Dialog>
                       </TableCell>
                       <TableCell>
                         <Button
@@ -215,6 +249,7 @@ export function Home() {
                             handleDownload(document.name, document.ingestId)
                           }
                           className="bg-[#25C1D1] hover:bg-[#1C9FA5] h-8 w-18"
+                          disabled={downloadMutation.isPending}
                         >
                           Download
                         </Button>

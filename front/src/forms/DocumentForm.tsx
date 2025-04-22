@@ -1,10 +1,4 @@
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
@@ -15,59 +9,42 @@ import toast from 'react-hot-toast'
 import { toastErrorStyle } from '@/lib/toast-error-style'
 import { ApiError } from '@/types/error'
 import SelectBox from '@/components/ui/selectBox'
-import {
-  NewDocumentFormData,
-  newDocumentSchema,
-} from '@/schemas/new-document-schema'
-import {
-  createDocument,
-  updateDocument,
-  uploadDocument,
-} from '@/services/documents'
+import { updateDocument } from '@/services/documents'
 import { useMutation } from '@tanstack/react-query'
 import { toastSuccessStyle } from '@/lib/toast-success-style'
-import { useNavigate } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { Document, DocumentType } from '@/services/documents/interface'
+import {
+  UpdateDocumentFormData,
+  updateDocumentSchema,
+} from '@/schemas/update-document-schema'
+import { queryClient } from '@/lib/react-query'
 
-export function NewDocumentForm() {
-  const navigate = useNavigate()
+interface DocumentFormProps {
+  documentData: Document
+  closeModal: () => void
+}
+
+export function DocumentForm({ documentData, closeModal }: DocumentFormProps) {
+  const [document] = useState<Document>(documentData)
 
   const {
     register,
     handleSubmit,
     reset,
+    setValue,
     formState: { errors },
-  } = useForm<z.infer<typeof newDocumentSchema>>({
-    resolver: zodResolver(newDocumentSchema),
-  })
-
-  const uploadMutation = useMutation({
-    mutationFn: uploadDocument,
-    onError: () => {
-      toast.error(
-        'Ocurred an error while uploading your document :(',
-        toastErrorStyle,
-      )
-    },
-  })
-
-  const createMutation = useMutation({
-    mutationFn: createDocument,
-    onError: () => {
-      toast.error(
-        'Ocurred an error while creating your document :(',
-        toastErrorStyle,
-      )
-    },
+  } = useForm<z.infer<typeof updateDocumentSchema>>({
+    resolver: zodResolver(updateDocumentSchema),
   })
 
   const updateMutation = useMutation({
     mutationFn: updateDocument,
-    onSuccess: (data) => {
-      toast.success('Document created successfully!', toastSuccessStyle)
+    onSuccess: () => {
+      toast.success('Document updated successfully!', toastSuccessStyle)
       reset()
-      navigate('/', {
-        state: { documentId: data.id, trasnferId: data.transferId },
-      })
+      closeModal()
+      queryClient.invalidateQueries({ queryKey: ['documents'] })
     },
     onError: () => {
       toast.error(
@@ -77,56 +54,32 @@ export function NewDocumentForm() {
     },
   })
 
-  async function onSubmit(data: NewDocumentFormData) {
+  async function onSubmit(data: UpdateDocumentFormData) {
     try {
-      const uploadRes = await uploadMutation.mutateAsync(data.file[0])
-
-      const { document, id } = await createMutation.mutateAsync({
-        name: data.name,
-        documentType: data.type,
-        language: data.language,
-        pdfFilePath: uploadRes.path,
-        ...(data.author && { author: data.author }),
-        ...(data.uniqueIdentifier && {
-          uniqueIdentifier: data.uniqueIdentifier,
-        }),
+      await updateMutation.mutate({
+        id: document.id,
+        ...data,
+        documentType: data.documentType as DocumentType,
       })
-
-      await updateMutation.mutate({ id: document.id, transferId: id })
     } catch (error) {
       const errorMessage =
         (error as ApiError)?.response?.data?.message ??
-        'Erro ao tentar criar o documento'
+        'Erro ao tentar atualizar o documento'
       toast.error(errorMessage, toastErrorStyle)
     }
   }
 
-  const isAnyMutationPending =
-    uploadMutation.isPending ||
-    createMutation.isPending ||
-    updateMutation.isPending
+  useEffect(() => {
+    setValue('documentType', document.documentType)
+    setValue('language', document.language)
+  }, [setValue, document.documentType, document.language])
 
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
       className="w-full items-center flex justify-center"
     >
-      <Card className="w-4xl">
-        <CardHeader>
-          <CardTitle className="text-xl font-bold tracking-tight text-[#1d93a0]">
-            Upload new document
-          </CardTitle>
-          <CardDescription className="flex flex-col gap-2">
-            <h3>
-              Fill your document informations and start to preserve it rigth
-              now!
-            </h3>
-            <div className="flex gap-1">
-              <h3 className="font-semibold">OBS:</h3>
-              <h3>Only name and uploaded file are required.</h3>
-            </div>
-          </CardDescription>
-        </CardHeader>
+      <Card className="w-full border-none shadow-none">
         <CardContent>
           <div className="flex flex-row justify-between">
             <div className="flex flex-col space-y-3 w-2/5">
@@ -134,6 +87,7 @@ export function NewDocumentForm() {
               <Input
                 id="name"
                 placeholder="My new document"
+                defaultValue={document.name}
                 {...register('name')}
               />
               <span className="text-sm text-destructive block min-h-[1.25rem]">
@@ -144,6 +98,7 @@ export function NewDocumentForm() {
                 id="author"
                 placeholder="John Doe"
                 type="text"
+                defaultValue={document.author ?? ''}
                 {...register('author')}
               />
               {errors.author?.message && (
@@ -157,7 +112,8 @@ export function NewDocumentForm() {
               <Input
                 id="uniqueIdentifier"
                 placeholder="84372-34"
-                type="text"
+                type="uniqueIdentifier"
+                defaultValue={document.uniqueIdentifier ?? ''}
                 {...register('uniqueIdentifier')}
               />
               {errors.uniqueIdentifier?.message && (
@@ -193,7 +149,7 @@ export function NewDocumentForm() {
                   },
                 ]}
                 className="w-1/2"
-                {...register('type')}
+                {...register('documentType')}
               />
             </div>
           </div>
@@ -215,28 +171,15 @@ export function NewDocumentForm() {
               {...register('language')}
             />
           </div>
-          <div className="my-5 flex flex-col gap-2">
-            <Label htmlFor="file">File selected</Label>
-            <Input
-              id="file"
-              placeholder="84372-34"
-              type="file"
-              accept=".pdf"
-              {...register('file')}
-            />
-            <span className="text-sm text-destructive block min-h-[1.25rem]">
-              {typeof errors.file?.message === 'string'
-                ? errors.file?.message
-                : ' '}
-            </span>
-          </div>
           <div className="w-full flex justify-around">
             <Button
-              disabled={isAnyMutationPending}
+              disabled={updateMutation.isPending}
               type="submit"
               className="bg-[#25C1D1] hover:bg-[#1C9FA5]"
             >
-              {isAnyMutationPending ? 'Processing...' : 'Start preservation'}
+              {updateMutation.isPending
+                ? 'Updating...'
+                : 'Update document informations'}
             </Button>
           </div>
         </CardContent>

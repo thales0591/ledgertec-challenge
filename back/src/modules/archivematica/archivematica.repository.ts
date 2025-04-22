@@ -2,7 +2,8 @@ import { BadRequestException, Injectable } from '@nestjs/common'
 import { StartTransferResponse } from './dto/start-transfer.dto'
 import { ConfigService } from '@nestjs/config'
 import { createArchivematicaClient } from 'src/commons/clients/archivematica-client'
-import { AxiosInstance } from 'axios'
+import { AxiosInstance, AxiosResponse } from 'axios'
+import { Readable } from 'stream'
 
 @Injectable()
 export class ArchivematicaRepository {
@@ -53,6 +54,21 @@ export class ArchivematicaRepository {
       return data
     } catch (error) {
       throw new BadRequestException(error)
+    }
+  }
+
+  async downloadFile(url: string): Promise<AxiosResponse<Readable>> {
+    try {
+      const response = await this.api.get<Readable>(url, {
+        responseType: 'stream',
+      })
+
+      console.log('Tipo de dados recebido: ', response.data.constructor.name)
+      return response
+    } catch (error) {
+      throw new BadRequestException(
+        'Error trying to dowload archive from archivematica',
+      )
     }
   }
 }

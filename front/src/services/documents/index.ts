@@ -41,7 +41,7 @@ export const updateDocument = async (
   return data
 }
 
-export const downloadDocument = async (id: string) => {
+export const downloadDocument = async (name: string, id: string) => {
   const response = await api.get(`/document/download/${id}`, {
     responseType: 'blob',
   })
@@ -49,7 +49,7 @@ export const downloadDocument = async (id: string) => {
   const url = window.URL.createObjectURL(new Blob([response.data]))
   const link = document.createElement('a')
   link.href = url
-  link.setAttribute('download', `document-${id}.pdf`)
+  link.setAttribute('download', `${name}.zip`)
   document.body.appendChild(link)
   link.click()
   link.remove()

@@ -1,10 +1,14 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Get,
+  NotFoundException,
   Param,
   Post,
   Put,
+  Query,
+  Res,
   UploadedFile,
   UseGuards,
   UseInterceptors,
@@ -22,11 +26,17 @@ import { GetIngestStatusUseCase } from './use-cases/get-ingest-status.usecase'
 import { UpdateDocumentDto } from './dto/update-document.dto'
 import { UpdateDocumentUseCase } from './use-cases/update-document.usecase'
 import { FetchDocumentUseCase } from './use-cases/fetch-document.usecase'
+import { ArchivematicaRepository } from '../archivematica/archivematica.repository'
+import { Response } from 'express'
+import { pipeline } from 'stream'
+import { promisify } from 'util'
 
 interface UploadedFileWithPath extends Express.Multer.File {
   filename: string
   path: string
 }
+
+const streamPipeline = promisify(pipeline)
 
 @UseGuards(JwtAuthGuard)
 @Controller('document')
@@ -38,11 +48,13 @@ export class DocumentController {
     private readonly getIngestStatusUseCase: GetIngestStatusUseCase,
     private readonly updateDocumentUseCase: UpdateDocumentUseCase,
     private readonly fetchDocumentUseCase: FetchDocumentUseCase,
+    private readonly archivematicaRepository: ArchivematicaRepository,
   ) {}
 
   @Get()
-  async findAll() {
-    return this.fetchAllDocumentsUseCase.execute()
+  async findAll(@Query('page') page = '1') {
+    const currentPage = parseInt(page, 10)
+    return this.fetchAllDocumentsUseCase.execute(currentPage)
   }
 
   @Get('transfer/:id')
@@ -58,6 +70,46 @@ export class DocumentController {
   @Get(':id')
   async getDocument(@Param('id') id: string) {
     return this.fetchDocumentUseCase.execute(id)
+  }
+
+  @Get('download/:id')
+  async proxyArchivematicaDownload(
+    @Param('id') id: string,
+    @Res({ passthrough: false }) res: Response,
+  ) {
+    try {
+      const fileUrl = `http://localhost:62080/archival-storage/download/aip/${id}/`
+      console.log('Requesting file from:', fileUrl)
+
+      const response = await this.archivematicaRepository.downloadFile(fileUrl)
+      console.log('Received response:', response)
+
+      res.setHeader('Content-Type', 'application/zip')
+      res.setHeader(
+        'Content-Disposition',
+        `attachment; filename="document-${id}.zip"`,
+      )
+
+      // Verificando o tipo de stream
+      if (response.data.constructor.name === 'IncomingMessage') {
+        console.log('Stream is valid!')
+
+        // Verificar antes do streaming
+        const contentLength = response.headers['content-length']
+        console.log('Content-Length:', contentLength)
+
+        // Stream para o response
+        await streamPipeline(response.data, res)
+
+        console.log('Stream completed successfully')
+      } else {
+        console.error('Invalid stream received.')
+        throw new BadRequestException('Received invalid stream')
+      }
+    } catch (error) {
+      console.error('Erro no download:', error)
+      throw new NotFoundException('Erro ao fazer o download do arquivo')
+    }
   }
 
   @Post()

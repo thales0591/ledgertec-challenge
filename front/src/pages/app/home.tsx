@@ -7,7 +7,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
   DocStatus,
   Document,
@@ -15,6 +15,7 @@ import {
   TransferStatus,
 } from '@/services/documents/interface'
 import {
+  downloadDocument,
   fetchAllDocuments,
   getIngestStatus,
   getTranferStatus,
@@ -26,6 +27,7 @@ import { toastErrorStyle } from '@/lib/toast-error-style'
 import toast from 'react-hot-toast'
 import { Pagination } from '@/components/pagination'
 import { z } from 'zod'
+import { queryClient } from '@/lib/react-query'
 
 type DocStatusProps = {
   status: DocStatus
@@ -40,14 +42,6 @@ export function Home() {
   const [totalPages, setTotalPages] = useState(0)
   const [searchParams, setSearchParams] = useSearchParams()
   const pageIndex = z.coerce.number().parse(searchParams.get('page') ?? '1')
-
-  const fetchMutation = useMutation({
-    mutationFn: fetchAllDocuments,
-    onSuccess: ({ data, total }) => {
-      setDocuments(data)
-      setTotalPages(total)
-    },
-  })
 
   const updateMutation = useMutation({
     mutationFn: updateDocument,
@@ -84,9 +78,12 @@ export function Home() {
           id: documentId,
           preservationStatus: 'PRESERVED',
           preservationDate: new Date(),
+          ingestId: data.uuid,
         })
         setIngestId('')
-        fetchMutation.mutate(pageIndex)
+        queryClient.invalidateQueries({
+          queryKey: ['documents'],
+        })
       }
       if (data.status !== 'COMPLETE' && data.status !== 'PROCESSING') {
         await updateMutation.mutateAsync({
@@ -98,6 +95,11 @@ export function Home() {
     },
   })
 
+  const { data } = useQuery({
+    queryKey: ['documents', pageIndex],
+    queryFn: () => fetchAllDocuments(pageIndex),
+  })
+
   useQuery({
     queryKey: ['transferId', transferId],
     queryFn: () => checkStatus.mutate(transferId),
@@ -107,14 +109,9 @@ export function Home() {
 
   useQuery({
     queryKey: ['ingestId', ingestId],
-    queryFn: () => checkIngest.mutate(ingestId),
+    queryFn: () => checkIngest.mutateAsync(ingestId),
     enabled: !!ingestId,
     refetchInterval: ingestId ? 2000 : false,
-  })
-
-  useQuery({
-    queryKey: ['documents', pageIndex],
-    queryFn: () => fetchMutation.mutate(pageIndex),
   })
 
   function capitalizeStatus(word: string) {
@@ -145,9 +142,32 @@ export function Home() {
     })
   }
 
+  const downloadMutation = useMutation({
+    mutationFn: async ({
+      name,
+      ingestId,
+    }: {
+      name: string
+      ingestId: string
+    }) => {
+      await downloadDocument(name, ingestId)
+    },
+  })
+
+  function handleDownload(name: string, ingestId: string) {
+    downloadMutation.mutate({ name, ingestId })
+  }
+
+  useEffect(() => {
+    if (data) {
+      setDocuments(data.data)
+      setTotalPages(data.total)
+    }
+  }, [data])
+
   return (
     <div className="flex flex-1 w-full justify-center items-center">
-      {documents ? (
+      {documents && documents.length > 0 ? (
         <div className="flex flex-col gap-4">
           <div className="rounded-md border w-6xl">
             <Table>
@@ -190,7 +210,12 @@ export function Home() {
                         </Button>
                       </TableCell>
                       <TableCell>
-                        <Button className="bg-[#25C1D1] hover:bg-[#1C9FA5] h-8 w-18">
+                        <Button
+                          onClick={() =>
+                            handleDownload(document.name, document.ingestId)
+                          }
+                          className="bg-[#25C1D1] hover:bg-[#1C9FA5] h-8 w-18"
+                        >
                           Download
                         </Button>
                       </TableCell>

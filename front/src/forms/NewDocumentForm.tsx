@@ -27,6 +27,7 @@ import {
 import { useMutation } from '@tanstack/react-query'
 import { toastSuccessStyle } from '@/lib/toast-success-style'
 import { useNavigate } from 'react-router-dom'
+import { queryClient } from '@/lib/react-query'
 
 export function NewDocumentForm() {
   const navigate = useNavigate()
@@ -68,6 +69,7 @@ export function NewDocumentForm() {
       navigate('/', {
         state: { documentId: data.id, trasnferId: data.transferId },
       })
+      queryClient.invalidateQueries({ queryKey: ['documents'] })
     },
     onError: () => {
       toast.error(
@@ -96,7 +98,7 @@ export function NewDocumentForm() {
     } catch (error) {
       const errorMessage =
         (error as ApiError)?.response?.data?.message ??
-        'Erro ao tentar criar o documento'
+        'Ocurred an error at document creation'
       toast.error(errorMessage, toastErrorStyle)
     }
   }

@@ -66,7 +66,6 @@ export class ArchivematicaRepository {
         },
       })
 
-      console.log('Tipo de dados recebido: ', response.data.constructor.name)
       return response
     } catch (error) {
       throw new BadRequestException(

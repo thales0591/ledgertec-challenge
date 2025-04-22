@@ -21,6 +21,7 @@ https://github.com/user-attachments/assets/2d32733b-f297-4e22-8c20-1a6ed9b4579f
       ...
       - "/mnt/c/Users/thale/Documentos/ArchivematicaShared:/home:rw"
 ```
+
 Você pode alterar o primeiro parâmetro para a pasta que achar melhor. 
 
 3. Prosseguir com a instalação de acordo com a [documentação oficial](https://github.com/artefactual/archivematica/blob/qa/1.x/hack/README.md)
@@ -31,10 +32,13 @@ Você pode alterar o primeiro parâmetro para a pasta que achar melhor.
 ```
 
 5. Dentro da pasta back/src/modules/documents, entre no arquivo document.controller.ts e altere a linha 104 para o diretório que você escolheu no passo 2, lembrando da sintaxe a depender de onde está rodando o backend.
+
+![imagem demontrando a linha 104](https://github.com/user-attachments/assets/91d019a1-4883-4fc3-b2cf-83b810421f4d)
+
    
-6. Criar seu próprio .env baseado no meu .env.example, tanto no backend quanto no front. No backend, caso vá usar a api key default, trocar por test:test
+7. Criar seu próprio .env baseado no meu .env.example, tanto no backend quanto no front. No backend, caso vá usar a key default, trocar por test:test
    
-7. Instalar as dependências dentro da pasta back e front
+8. Instalar as dependências dentro da pasta back e front
 ``` /back e /front
   npm install
 ```
@@ -70,6 +74,7 @@ E pronto!
 - Download de arquivo do archivematica via backend utilizando pipeline, repassando assim as chunks para transmissão assíncrona de dados
 - React Query para cache de dados e maior controle sobre API calls
 - Validação forte de formulários com React Form e Zod
+- Fetch paginado de documentos no backend capaz de lidar com grandes volumes de dados
 
 ## Tecnologias Utilizadas
 - **Linguagens:** Typescript

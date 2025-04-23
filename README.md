@@ -1,11 +1,16 @@
 # Sistema de Preservação Digital com Archivematica
 
+## Pitch do projeto em funcionamento
+
+https://github.com/user-attachments/assets/2d32733b-f297-4e22-8c20-1a6ed9b4579f
+
 ## Como Rodar o Projeto
 
 1. Clonar o repositório do archivematica em ambiente Linux (usei WSL)
 ``` bash 
   git clone https://github.com/artefactual/archivematica.git --branch qa/1.x --recurse-submodules
 ```
+
 2. Alterar o docker compose de acordo com os seguintes passos: adicionar uma linha no volumes do service "archivematica-storage-service", nesse projeto eu mapeei uma pasta local do meu windows para compatilhar a pasta interna do container do archivematica da seguinte forma: 
 ``` docker-compose.yml
   services:
@@ -16,34 +21,48 @@
       ...
       - "/mnt/c/Users/thale/Documentos/ArchivematicaShared:/home:rw"
 ```
+
 Você pode alterar o primeiro parâmetro para a pasta que achar melhor. 
+
 3. Prosseguir com a instalação de acordo com a [documentação oficial](https://github.com/artefactual/archivematica/blob/qa/1.x/hack/README.md)
-3. Clone meu repositório:
+  
+4. Clone meu repositório:
 ``` bash
   git clone https://github.com/thales0591/ledgertec-challenge.git
 ```
-4. Dentro da pasta back/src/modules/documents, entre no arquivo document.controller.ts e altere a linha 104 para o diretório que você escolheu no passo 2, lembrando da sintaxe a depender de onde está rodando o backend.
-5. Criar seu próprio .env baseado no meu .env.example, tanto no backend quanto no front. No backend, caso vá usar a api key default, trocar por test:test
-6. Instalar as dependências dentro da pasta back e front
+
+5. Dentro da pasta back/src/modules/documents, entre no arquivo document.controller.ts e altere a linha 104 para o diretório que você escolheu no passo 2, lembrando da sintaxe a depender de onde está rodando o backend.
+
+![imagem demontrando a linha 104](https://github.com/user-attachments/assets/91d019a1-4883-4fc3-b2cf-83b810421f4d)
+
+   
+7. Criar seu próprio .env baseado no meu .env.example, tanto no backend quanto no front. No backend, caso vá usar a key default, trocar por test:test
+   
+8. Instalar as dependências dentro da pasta back e front
 ``` /back e /front
   npm install
 ```
-7. Com o docker desktop aberto, rodar meu docker compose da pasta back
+
+8. Com o docker desktop aberto, rodar meu docker compose da pasta back
 ``` /back
   docker-compose up -d
 ```
-8. Rodar as migrations
+
+9. Rodar as migrations
 ``` /back
   npm run prisma:migrate
 ```
-9. Rodar o backend
+
+10. Rodar o backend
 ``` /back
   npm run start:dev
 ```
-10. Rodar o frontend
+
+11. Rodar o frontend
 ``` /front
   npm run dev
 ```
+
 E pronto!
 
 ## Estratégias e patterns utilizados
@@ -55,6 +74,7 @@ E pronto!
 - Download de arquivo do archivematica via backend utilizando pipeline, repassando assim as chunks para transmissão assíncrona de dados
 - React Query para cache de dados e maior controle sobre API calls
 - Validação forte de formulários com React Form e Zod
+- Fetch paginado de documentos no backend capaz de lidar com grandes volumes de dados
 
 ## Tecnologias Utilizadas
 - **Linguagens:** Typescript

@@ -57,7 +57,7 @@ export function SignUpForm() {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex flex-col gap-2">
-            <Label htmlFor="name">E-mail</Label>
+            <Label htmlFor="name">Name</Label>
             <Input id="name" placeholder="Your name" {...register('name')} />
             {errors.name?.message && (
               <span className="text-sm text-destructive">
